@@ -1,37 +1,28 @@
-function getList () {
-	var list = [],
-		movie,
-		title;
+function getFilmVotes(callback) {
+	$.get(userFilmVotesCachedParameters.splitStringPath, onListLoad);
 
-	$('.votesPanel .votePanel').each(function () {
-	  movie = {};
-	  movie.titlePl = $(this).find('.voteFilmTitle a')[0].title;
-	  movie.year = $(this).find('.voteFilmTitle')[0].innerHTML.match(/\(([0-9]+)\)/)[1];
-	  movie.rating = $(this).find('.rateText span').text() + '.0';
+	function onListLoad(respone) {
+		var list = respone.split('.jpg').map(function(item) {
+		  return item.split(/\\a|\\c|\\e/).reverse();
+		});
 
-	  title = $(this).find('.voteFilmTitle')[0].innerHTML.match(/<br>(.+)<div class="countryLabel">/);
-	  if (title) {
-	  	movie.title = title[1];
-	  } else {
-	  	movie.title = movie.titlePl;
-	  }
-
-	  list.push(movie);
-	});
-
-	$('body').empty().append('<textarea>'+ JSON.stringify(list) +'</textarea>');
+		callback(list);
+	}
 }
 
-var option = $('<option value="999999">999999</option>');
-$('.selectToReplace').append(option);
-option.attr('selected', 'selected').parent().trigger('change');
+getFilmVotes(function(arr) {
+  var movies = [];
 
-$('.votesPanel').bind('DOMSubtreeModified', function checkVoteList () {
-  var expected = parseInt($('.statsHeader b:first-child')[0].innerHTML),
-  	length = $('.votesPanel .votePanel').length;
+  arr.forEach(function(elem){
+	movie = {
+		titlePl: elem[4],
+		title: elem[5],
+		year: elem[3],
+		rating: elem[1]
+	};
 
-  if (expected === length) {
-  	getList();
-    console.log('OK');
-  }
+	movies.push(movie);
+  });
+
+	$('body').empty().append('<textarea>'+ JSON.stringify(movies) +'</textarea>');
 });
